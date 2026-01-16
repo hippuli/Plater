@@ -2395,6 +2395,7 @@ local debuff_options = {
 		end,
 		name = "Important Auras Border Color",
 		desc = "Important Auras Border Color",
+		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	{
 		type = "color",
@@ -2410,6 +2411,7 @@ local debuff_options = {
 		end,
 		name = "Dispellable Buffs Border Color",
 		desc = "Dispellable Buffs Border Color",
+		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	{
 		type = "color",
@@ -2425,6 +2427,7 @@ local debuff_options = {
 		end,
 		name = "Enrage Buffs Border Color",
 		desc = "Enrage Buffs Border Color",
+		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	--border color is buff
 	{
@@ -2441,6 +2444,22 @@ local debuff_options = {
 		end,
 		name = "Buffs Border Color",
 		desc = "Buffs Border Color",
+	},
+		--border color is debuff
+	{
+		type = "color",
+		boxfirst = true,
+		get = function()
+			local color = Plater.db.profile.aura_border_colors.is_debuff
+			return {color[1], color[2], color[3], color[4]}
+		end,
+		set = function (self, r, g, b, a) 
+			local color = Plater.db.profile.aura_border_colors.is_debuff
+			color[1], color[2], color[3], color[4] = r, g, b, a
+			Plater.UpdateAllPlates()
+		end,
+		name = "Debuffs Border Color",
+		desc = "Debuffs Border Color",
 	},
 	--border color is offensive
 	{
@@ -2473,6 +2492,7 @@ local debuff_options = {
 		end,
 		name = "Offensive CD Border Color",
 		desc = "Offensive CD Border Color",
+		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	--border color is offensive
 	{
@@ -2489,6 +2509,7 @@ local debuff_options = {
 		end,
 		name = "Defensive CD Border Color",
 		desc = "Defensive CD Border Color",
+		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	--border color is default
 	{
@@ -6166,6 +6187,7 @@ local relevance_options = {
 			name = "OPTIONS_POWERBAR",
 			desc = "OPTIONS_ALPHABYFRAME_ALPHAMULTIPLIER",
 			usedecimals = true,
+			hidden = IS_WOW_PROJECT_MIDNIGHT,
 		},
 		{
 			type = "range",
@@ -6276,6 +6298,7 @@ local relevance_options = {
 			name = "OPTIONS_POWERBAR",
 			desc = "OPTIONS_ALPHABYFRAME_ALPHAMULTIPLIER",
 			usedecimals = true,
+			hidden = IS_WOW_PROJECT_MIDNIGHT,
 		},
 		{
 			type = "range",
@@ -7035,7 +7058,22 @@ end
 			usedecimals = true,
 			name = "OPTIONS_YOFFSET",
 			desc = "OPTIONS_YOFFSET_DESC",
-		},	
+		},
+		--name text length
+		{
+			type = "range",
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.actorname_text_max_length end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config.friendlyplayer.actorname_text_max_length = value
+				Plater.UpdateAllPlates()
+			end,
+			min = 0,
+			max = 99,
+			step = 1,
+			usedecimals = false,
+			name = "Max length",
+			desc = "Name text length limitation",
+		},
 		
 		--cast text size
 		{type = "breakline"},
@@ -7940,7 +7978,22 @@ end
 			usedecimals = true,
 			name = "OPTIONS_YOFFSET",
 			desc = "OPTIONS_YOFFSET_DESC",
-		},	
+		},
+		--name text length
+		{
+			type = "range",
+			get = function() return Plater.db.profile.plate_config.enemyplayer.actorname_text_max_length end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config.enemyplayer.actorname_text_max_length = value
+				Plater.UpdateAllPlates()
+			end,
+			min = 0,
+			max = 99,
+			step = 1,
+			usedecimals = false,
+			name = "Max length",
+			desc = "Name text length limitation",
+		},
 		
 		{type = "breakline"},
 		
@@ -8850,7 +8903,22 @@ end
 			usedecimals = true,
 			name = "OPTIONS_YOFFSET",
 			desc = "OPTIONS_YOFFSET_DESC",
-		},	
+		},
+		--name text length
+		{
+			type = "range",
+			get = function() return Plater.db.profile.plate_config.friendlynpc.actorname_text_max_length end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config.friendlynpc.actorname_text_max_length = value
+				Plater.UpdateAllPlates()
+			end,
+			min = 0,
+			max = 99,
+			step = 1,
+			usedecimals = false,
+			name = "Max length",
+			desc = "Name text length limitation",
+		},
 		
 		{type = "breakline"},
 		
@@ -10031,7 +10099,22 @@ end
 				usedecimals = true,
 				name = "OPTIONS_YOFFSET",
 				desc = "OPTIONS_YOFFSET_DESC",
-			},	
+			},
+			--name text length
+			{
+				type = "range",
+				get = function() return Plater.db.profile.plate_config.enemynpc.actorname_text_max_length end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.plate_config.enemynpc.actorname_text_max_length = value
+					Plater.UpdateAllPlates()
+				end,
+				min = 0,
+				max = 99,
+				step = 1,
+				usedecimals = false,
+				name = "Max length",
+				desc = "Name text length limitation",
+			},
 			
 			{type = "breakline"},
 			
@@ -11505,34 +11588,21 @@ end
 		
 		{type = "breakline"},
 	
-	}
-	
-	
-	if IS_WOW_PROJECT_NOT_MAINLINE and not IS_WOW_PROJECT_CLASSIC_WRATH then
-		local thread_options_tank = {
-			{type = "label", get = function() return "Tank or DPS Colors:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", get = function() return "Tank or DPS Colors:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = not IS_WOW_PROJECT_NOT_MAINLINE},
 			
-			{
-				type = "toggle",
-				get = function() return Plater.db.profile.tank_threat_colors end,
-				set = function (self, fixedparam, value) 
-					Plater.db.profile.tank_threat_colors = value
-					Plater.RefreshTankCache()
-				end,
-				name = "OPTIONS_THREAT_CLASSIC_USE_TANK_COLORS",
-				desc = "OPTIONS_THREAT_CLASSIC_USE_TANK_COLORS",
-			},
-		
-			{type = "blank"},
-			
-		}
-		
-		for _, t in ipairs (thread_options_tank) do
-			tinsert (thread_options, t)
-		end
-	end
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.tank_threat_colors end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.tank_threat_colors = value
+				Plater.RefreshTankCache()
+			end,
+			name = "OPTIONS_THREAT_CLASSIC_USE_TANK_COLORS",
+			desc = "OPTIONS_THREAT_CLASSIC_USE_TANK_COLORS",
+			hidden = not IS_WOW_PROJECT_NOT_MAINLINE
+		},
 	
-	local thread_options2 = {
+		{type = "blank", hidden = not IS_WOW_PROJECT_NOT_MAINLINE},
 		
 		{type = "label", get = function() return "OPTIONS_THREAT_COLOR_OVERRIDE_ANCHOR_TITLE" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
@@ -11613,11 +11683,75 @@ end
 			desc = "OPTIONS_THREAT_USE_AGGRO_GLOW_DESC",
 		},
 		
+		{type = "breakline"},
+		
+		{type = "label", get = function() return "Unit Type Coloring" .. ":" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.unit_type_coloring_enabled end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.unit_type_coloring_enabled = value
+			end,
+			name = "OPTIONS_ENABLED",
+			desc = "Enable unit type coloring with the colors below.\nOnly active in dungeons and raids.\nBad threat states will override this color.",
+		},
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.unit_type_coloring_boss
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.unit_type_coloring_boss
+				color[1], color[2], color[3], color[4] = r, g, b, a
+				Plater.UpdateAllNameplateColors()
+			end,
+			name = "Boss",
+			desc = "Color for raid or dungeon bosses.",
+		},
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.unit_type_coloring_miniboss
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.unit_type_coloring_miniboss
+				color[1], color[2], color[3], color[4] = r, g, b, a
+				Plater.UpdateAllNameplateColors()
+			end,
+			name = "Miniboss",
+			desc = "Color for minibosses.",
+		},
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.unit_type_coloring_caster
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.unit_type_coloring_caster
+				color[1], color[2], color[3], color[4] = r, g, b, a
+				Plater.UpdateAllNameplateColors()
+			end,
+			name = "Caster",
+			desc = "Color for caster units.",
+		},
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.unit_type_coloring_elite
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.unit_type_coloring_elite
+				color[1], color[2], color[3], color[4] = r, g, b, a
+				Plater.UpdateAllNameplateColors()
+			end,
+			name = "Elite",
+			desc = "Color for elite units.",
+		},
 	}
-	
-	for _, t in ipairs (thread_options2) do
-		tinsert (thread_options, t)
-	end
 	
 	_G.C_Timer.After(0.990, function() --~delay
 		thread_options.always_boxfirst = true
