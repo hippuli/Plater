@@ -1361,36 +1361,6 @@ end
 		newIcon:SetScript ("OnLeave", Plater.OnLeaveAura)
 		
 		newIcon:SetMouseClickEnabled (false)
-		
-		--newIcon.Border = newIcon:CreateTexture (nil, "background")
-		--newIcon.Border:SetAllPoints()
-		--newIcon.Border:SetColorTexture (0, 0, 0)
-		
-		-- switch to proper border, keep compatibility
-		newIcon.Border = DF:CreateFullBorder("$parentBorder", newIcon)
-		local iconOffset = -1 * UIParent:GetEffectiveScale() --* (Plater.db.profile.use_ui_parent and (Plater.db.profile.ui_parent_scale_tune) or 1)
-		PixelUtil.SetPoint (newIcon.Border, "TOPLEFT", newIcon, "TOPLEFT", -iconOffset, iconOffset)
-		PixelUtil.SetPoint (newIcon.Border, "TOPRIGHT", newIcon, "TOPRIGHT", iconOffset, iconOffset)
-		PixelUtil.SetPoint (newIcon.Border, "BOTTOMLEFT", newIcon, "BOTTOMLEFT", -iconOffset, -iconOffset)
-		PixelUtil.SetPoint (newIcon.Border, "BOTTOMRIGHT", newIcon, "BOTTOMRIGHT", iconOffset, -iconOffset)
-		newIcon.SetBackdropBorderColor = function(self, r, g, b, a)
-			self.Border:SetVertexColor(r, g, b, a)
-		end
-		newIcon.Border.SetBorderSize = function(self, size)
-			local borderSize = (size or 1) * UIParent:GetEffectiveScale()-- * (Plater.db.profile.use_ui_parent and (Plater.db.profile.ui_parent_scale_tune) or 1)
-			self:SetBorderSizes(borderSize, 1, borderSize, 0)
-			self:UpdateSizes()
-		end
-		newIcon.SetBorderSize = function(self, size)
-			self.Border:SetBorderSize(size)
-		end
-		newIcon.SetBackdrop = function(self, options)
-			local borderSize = options.edgeSize or 1
-			self.Border:SetBorderSize(borderSize)
-		end
-		newIcon.GetBackdropBorderColor = function(self)
-			return self.Border:GetVertexColor()
-		end
 
 		--newIcon.BorderMask = newIcon:CreateMaskTexture(nil, "artwork")
 		--newIcon.BorderMask:SetAllPoints()
@@ -1399,16 +1369,14 @@ end
 		--newIcon.BorderMask:Hide()
 
 		newIcon.Icon = newIcon:CreateTexture (nil, "artwork")
-		--newIcon.Icon:SetSize (18, 12)
-		--newIcon.Icon:SetPoint ("center")
-		iconOffset = -1 * UIParent:GetEffectiveScale() --* (Plater.db.profile.use_ui_parent and (Plater.db.profile.ui_parent_scale_tune) or 1)
+		iconOffset = 0
 		PixelUtil.SetPoint (newIcon.Icon, "TOPLEFT", newIcon, "TOPLEFT", -iconOffset, iconOffset)
 		PixelUtil.SetPoint (newIcon.Icon, "TOPRIGHT", newIcon, "TOPRIGHT", iconOffset, iconOffset)
 		PixelUtil.SetPoint (newIcon.Icon, "BOTTOMLEFT", newIcon, "BOTTOMLEFT", -iconOffset, -iconOffset)
 		PixelUtil.SetPoint (newIcon.Icon, "BOTTOMRIGHT", newIcon, "BOTTOMRIGHT", iconOffset, -iconOffset)
 		newIcon.Icon:SetTexCoord (.05, .95, .1, .6)
-		newIcon.Icon:SetTexelSnappingBias(0.0)
-		newIcon.Icon:SetSnapToPixelGrid(false)
+		--newIcon.Icon:SetTexelSnappingBias(0.0)
+		--newIcon.Icon:SetSnapToPixelGrid(false)
 
 		newIcon.IconMask = newIcon:CreateMaskTexture(nil, "artwork")
 		newIcon.IconMask:SetAllPoints()
@@ -1416,13 +1384,12 @@ end
 		newIcon.Icon:AddMaskTexture(newIcon.IconMask)
 		newIcon.IconMask:Hide()
 		
-		newIcon.Cooldown = CreateFrame ("cooldown", "$parentCooldown", newIcon, "CooldownFrameTemplate, BackdropTemplate")
-		--newIcon.Cooldown:SetPoint ("center", 0, -1)
-		--newIcon.Cooldown:SetAllPoints()
-		PixelUtil.SetPoint (newIcon.Cooldown, "TOPLEFT", newIcon, "TOPLEFT", 0, 0)
-		PixelUtil.SetPoint (newIcon.Cooldown, "TOPRIGHT", newIcon, "TOPRIGHT", 0, 0)
-		PixelUtil.SetPoint (newIcon.Cooldown, "BOTTOMLEFT", newIcon, "BOTTOMLEFT", 0, 0)
-		PixelUtil.SetPoint (newIcon.Cooldown, "BOTTOMRIGHT", newIcon, "BOTTOMRIGHT", 0, 0)
+		newIcon.Cooldown = CreateFrame ("cooldown", "$parentCooldown", newIcon, "CooldownFrameTemplate")
+		iconOffset = 0
+		PixelUtil.SetPoint (newIcon.Cooldown, "TOPLEFT", newIcon, "TOPLEFT", -iconOffset, iconOffset)
+		PixelUtil.SetPoint (newIcon.Cooldown, "TOPRIGHT", newIcon, "TOPRIGHT", iconOffset, iconOffset)
+		PixelUtil.SetPoint (newIcon.Cooldown, "BOTTOMLEFT", newIcon, "BOTTOMLEFT", -iconOffset, -iconOffset)
+		PixelUtil.SetPoint (newIcon.Cooldown, "BOTTOMRIGHT", newIcon, "BOTTOMRIGHT", iconOffset, -iconOffset)
 		newIcon.Cooldown:EnableMouse (false)
 		if newIcon.Cooldown.EnableMouseMotion then
 			newIcon.Cooldown:EnableMouseMotion (false)
@@ -1447,14 +1414,7 @@ end
 
 		newIcon.Cooldown.noCooldownCount = Plater.db.profile.disable_omnicc_on_auras
 
-		--newIcon.Cooldown:SetSwipeColor (0, 0, 0) --not working
-		--newIcon.Cooldown:SetDrawSwipe (false)
-		--newIcon.Cooldown:SetSwipeTexture ("Interface\\Garrison\\Garr_TimerFill")
-		--newIcon.Cooldown:SetEdgeTexture ("Interface\\Cooldown\\edge-LoC");
-		--newIcon.Cooldown:SetReverse (true)
-		--newIcon.Cooldown:SetCooldownUNIX (startTime, buildDuration);
-
-		newIcon.CountFrame = CreateFrame ("frame", "$parentCountFrame", newIcon, BackdropTemplateMixin and "BackdropTemplate")
+		newIcon.CountFrame = CreateFrame ("frame", "$parentCountFrame", newIcon)--, BackdropTemplateMixin and "BackdropTemplate")
 		newIcon.CountFrame:SetAllPoints()
 		newIcon.CountFrame:EnableMouse (false)
 		if newIcon.CountFrame.EnableMouseMotion then
@@ -1475,6 +1435,54 @@ end
 			newIcon.Cooldown.Timer:SetPoint ("center")
 		end
 		newIcon.TimerText = newIcon.Cooldown.Timer
+
+
+		-- switch to proper border, keep compatibility
+		newIcon.Border = DF:CreateFullBorder("$parentBorder", newIcon)
+		newIcon.Border:SetFrameLevel(newIcon:GetFrameLevel() + 1)
+		local iconOffset = -1 --/ UIParent:GetEffectiveScale() --* (Plater.db.profile.use_ui_parent and (Plater.db.profile.ui_parent_scale_tune) or 1)
+		PixelUtil.SetPoint (newIcon.Border, "TOPLEFT", newIcon, "TOPLEFT", -iconOffset, iconOffset)
+		PixelUtil.SetPoint (newIcon.Border, "TOPRIGHT", newIcon, "TOPRIGHT", iconOffset, iconOffset)
+		PixelUtil.SetPoint (newIcon.Border, "BOTTOMLEFT", newIcon, "BOTTOMLEFT", -iconOffset, -iconOffset)
+		PixelUtil.SetPoint (newIcon.Border, "BOTTOMRIGHT", newIcon, "BOTTOMRIGHT", iconOffset, -iconOffset)
+		newIcon.SetBackdropBorderColor = function(self, r, g, b, a)
+			self.Border:SetVertexColor(r, g, b, a)
+		end
+		newIcon.Border.SetBorderSize = function(self, size)
+			local borderSize = (size or 1)
+			self:SetBorderSizes(borderSize, 0, borderSize, 0)
+			self:UpdateSizes()
+		end
+		newIcon.SetBorderSize = function(self, size)
+			self.Border:SetBorderSize(size)
+		end
+		newIcon.SetBackdrop = function(self, options)
+			local borderSize = options.edgeSize or 1
+			self.Border:SetBorderSize(borderSize)
+		end
+		newIcon.GetBackdropBorderColor = function(self)
+			return self.Border:GetVertexColor()
+		end
+
+		newIcon.SetSizes = function(self)
+			local iconOffset = -1 --* UIParent:GetEffectiveScale() --* (Plater.db.profile.use_ui_parent and (Plater.db.profile.ui_parent_scale_tune) or 1)
+			PixelUtil.SetPoint (self.Border, "TOPLEFT", self, "TOPLEFT", -iconOffset, iconOffset)
+			PixelUtil.SetPoint (self.Border, "TOPRIGHT", self, "TOPRIGHT", iconOffset, iconOffset)
+			PixelUtil.SetPoint (self.Border, "BOTTOMLEFT", self, "BOTTOMLEFT", -iconOffset, -iconOffset)
+			PixelUtil.SetPoint (self.Border, "BOTTOMRIGHT", self, "BOTTOMRIGHT", iconOffset, -iconOffset)
+
+			iconOffset = 0 --* UIParent:GetEffectiveScale()
+			PixelUtil.SetPoint (self.Icon, "TOPLEFT", self, "TOPLEFT", -iconOffset, iconOffset)
+			PixelUtil.SetPoint (self.Icon, "TOPRIGHT", self, "TOPRIGHT", iconOffset, iconOffset)
+			PixelUtil.SetPoint (self.Icon, "BOTTOMLEFT", self, "BOTTOMLEFT", -iconOffset, -iconOffset)
+			PixelUtil.SetPoint (self.Icon, "BOTTOMRIGHT", self, "BOTTOMRIGHT", iconOffset, -iconOffset)
+
+			iconOffset = -1
+			PixelUtil.SetPoint (newIcon.Cooldown, "TOPLEFT", newIcon, "TOPLEFT", -iconOffset, iconOffset)
+			PixelUtil.SetPoint (newIcon.Cooldown, "TOPRIGHT", newIcon, "TOPRIGHT", iconOffset, iconOffset)
+			PixelUtil.SetPoint (newIcon.Cooldown, "BOTTOMLEFT", newIcon, "BOTTOMLEFT", -iconOffset, -iconOffset)
+			PixelUtil.SetPoint (newIcon.Cooldown, "BOTTOMRIGHT", newIcon, "BOTTOMRIGHT", iconOffset, -iconOffset)
+		end
 
 		return newIcon
 	end
@@ -1798,9 +1806,10 @@ end
 					--auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
 				end
 			end
-			auraIconFrame:SetBorderSize (borderThickness)
 			local sizeMod = 1 --UIParent:GetEffectiveScale() --* (Plater.db.profile.use_ui_parent and (Plater.db.profile.ui_parent_scale_tune) or 1)
 			PixelUtil.SetSize(auraIconFrame, auraWidth * sizeMod, auraHeight * sizeMod)
+			auraIconFrame:SetSizes()
+			auraIconFrame:SetBorderSize (borderThickness)
 			
 			auraIconFrame.Cooldown:SetEdgeTexture (profile.aura_cooldown_edge_texture)
 			auraIconFrame.Cooldown:SetReverse (profile.aura_cooldown_reverse)
