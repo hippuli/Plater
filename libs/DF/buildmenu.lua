@@ -30,6 +30,7 @@ local _
 ---@field inline boolean?
 ---@field widget table?
 ---@field disableif function? a function that returns true or nil, if true the widget get :Disable(), :Enabled() otherwise
+---@field tags string[] optional tags that help the search bar to find the option
 
 ---@class df_menu_label : df_menu_table
 ---@field get function
@@ -932,7 +933,7 @@ local checkForDisableIF = function(parent)
             if widgetTable.disableif() == true and widgetTable.widget.Disable then
                 widgetTable.widget:Disable()
             else
-                if (widgetTable.widget.IsEnabled and not widgetTable.widget:IsEnabled()) then
+                if rawget(widgetTable.widget, "lockdown") or (widgetTable.widget.IsEnabled and not widgetTable.widget:IsEnabled()) then
                     widgetTable.widget:Enable()
                 end
             end
