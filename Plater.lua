@@ -1793,7 +1793,7 @@ Plater.AnchorNamesByPhraseId = {
 
 		DB_LERP_COLOR_SPEED = profile.color_lerp_speed
 		DB_PLATE_CONFIG = profile.plate_config
-		DB_TRACK_METHOD = IS_WOW_PROJECT_MIDNIGHT and 1 or profile.aura_tracker.track_method
+		DB_TRACK_METHOD = IS_WOW_PROJECT_MIDNIGHT and not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS and 1 or profile.aura_tracker.track_method
 		
 		DB_DO_ANIMATIONS = not IS_WOW_PROJECT_MIDNIGHT and profile.use_health_animation or false -- done implicit in midnight
 		DB_ANIMATION_TIME_DILATATION = profile.health_animation_time_dilatation
@@ -5166,9 +5166,11 @@ function Plater.OnInit() --private --~oninit ~init
 		Plater.PreAllocateAuraContainers()
 		
 		--can also hook 'ClassNameplateBar:ShowNameplateBar()' which will show and call NamePlateDriverFrame:SetClassNameplateBar(self); which will call SetupClassNameplateBars()
-		hooksecurefunc (NamePlateDriverFrame, "SetupClassNameplateBars", function (self)
-			return Plater.UpdatePersonalBar (self)
-		end)
+		if NamePlateDriverFrame.SetupClassNameplateBars then
+			hooksecurefunc (NamePlateDriverFrame, "SetupClassNameplateBars", function (self)
+				return Plater.UpdatePersonalBar (self)
+			end)
+		end
 		
 		if IS_WOW_PROJECT_MIDNIGHT_API then
 			
@@ -5193,49 +5195,55 @@ function Plater.OnInit() --private --~oninit ~init
 					Plater.UpdateBlizzardNameplateFonts(true)
 				end)
 			end)
-			hooksecurefunc(NamePlateDriverFrame, "UpdateNamePlateSize", function()
-				if not Plater.db.profile.blizzard_nameplate_font_override_enabled then return end
-				Plater.UpdateBlizzardNameplateFonts(true)
-				C_Timer.After(0.1, function ()
+			if NamePlateDriverFrame.UpdateNamePlateSize then
+				hooksecurefunc(NamePlateDriverFrame, "UpdateNamePlateSize", function()
+					if not Plater.db.profile.blizzard_nameplate_font_override_enabled then return end
 					Plater.UpdateBlizzardNameplateFonts(true)
+					C_Timer.After(0.1, function ()
+						Plater.UpdateBlizzardNameplateFonts(true)
+					end)
 				end)
-			end)
-			hooksecurefunc(NamePlateUnitFrameMixin, "UpdateNameClassColor", function(self)
-				local plateFrame = C_NamePlate.GetNamePlateForUnit(self.unit)
-				--if not plateFrame then -- secure in dungeon
-					--local onlyNamesEnabled = GetCVarBool("nameplateShowOnlyNames") or GetCVarBool("nameplateShowOnlyNameForFriendlyPlayerUnits")
+			end
+			if NamePlateUnitFrameMixin then
+				hooksecurefunc(NamePlateUnitFrameMixin, "UpdateNameClassColor", function(self)
+					local plateFrame = C_NamePlate.GetNamePlateForUnit(self.unit)
+					--if not plateFrame then -- secure in dungeon
+						--local onlyNamesEnabled = GetCVarBool("nameplateShowOnlyNames") or GetCVarBool("nameplateShowOnlyNameForFriendlyPlayerUnits")
 
-					if not UnitIsPlayer(self.unit) then
-						if Plater.db.profile.hide_friendly_npc_healthbar then
-							TextureLoadingGroupMixin.AddTexture({ textures = self.HealthBarsContainer.healthBar }, "showOnlyName")
-							TextureLoadingGroupMixin.AddTexture({ textures = self.castBar }, "showOnlyName")
-							TextureLoadingGroupMixin.AddTexture({ textures = self.castBar }, "widgetsOnly")
-						else
-							TextureLoadingGroupMixin.RemoveTexture({ textures = self.HealthBarsContainer.healthBar }, "showOnlyName")
-							TextureLoadingGroupMixin.RemoveTexture({ textures = self.castBar }, "showOnlyName")
-							TextureLoadingGroupMixin.RemoveTexture({ textures = self.castBar }, "widgetsOnly")
-							--TextureLoadingGroupMixin.RemoveTexture({ textures = self }, "explicitIsPlayer")
+						if not UnitIsPlayer(self.unit) then
+							if Plater.db.profile.hide_friendly_npc_healthbar then
+								TextureLoadingGroupMixin.AddTexture({ textures = self.HealthBarsContainer.healthBar }, "showOnlyName")
+								TextureLoadingGroupMixin.AddTexture({ textures = self.castBar }, "showOnlyName")
+								TextureLoadingGroupMixin.AddTexture({ textures = self.castBar }, "widgetsOnly")
+							else
+								TextureLoadingGroupMixin.RemoveTexture({ textures = self.HealthBarsContainer.healthBar }, "showOnlyName")
+								TextureLoadingGroupMixin.RemoveTexture({ textures = self.castBar }, "showOnlyName")
+								TextureLoadingGroupMixin.RemoveTexture({ textures = self.castBar }, "widgetsOnly")
+								--TextureLoadingGroupMixin.RemoveTexture({ textures = self }, "explicitIsPlayer")
+							end
+							--TextureLoadingGroupMixin.AddTexture({ textures = self }, "explicitIsPlayer")
 						end
-						--TextureLoadingGroupMixin.AddTexture({ textures = self }, "explicitIsPlayer")
+						TextureLoadingGroupMixin.AddTexture({ textures = self.optionTable }, "colorNameBySelection")
+					--end
+				end)
+
+				hooksecurefunc(NamePlateUnitFrameMixin, "UpdateIsFriend", function(self)
+					local plateFrame = C_NamePlate.GetNamePlateForUnit(self.unit)
+					if not plateFrame and not self:IsFriend() then
+						TextureLoadingGroupMixin.RemoveTexture({ textures = self }, "isPlayer")
 					end
-					TextureLoadingGroupMixin.AddTexture({ textures = self.optionTable }, "colorNameBySelection")
-				--end
-			end)
-			hooksecurefunc(NamePlateUnitFrameMixin, "UpdateIsFriend", function(self)
-				local plateFrame = C_NamePlate.GetNamePlateForUnit(self.unit)
-				if not plateFrame and not self:IsFriend() then
-					TextureLoadingGroupMixin.RemoveTexture({ textures = self }, "isPlayer")
-				end
-			end)
-			hooksecurefunc(NamePlateUnitFrameMixin, "OnUnitSet", function(self)
-				local plateFrame = C_NamePlate.GetNamePlateForUnit(self.unit)
-				if not plateFrame then -- secure in dungeon
-					local onlyNamesEnabled = GetCVarBool("nameplateShowOnlyNames") or GetCVarBool("nameplateShowOnlyNameForFriendlyPlayerUnits")
-					if onlyNamesEnabled then
-						TextureLoadingGroupMixin.AddTexture({ textures = self }, "showOnlyName")
+				end)
+
+				hooksecurefunc(NamePlateUnitFrameMixin, "OnUnitSet", function(self)
+					local plateFrame = C_NamePlate.GetNamePlateForUnit(self.unit)
+					if not plateFrame then -- secure in dungeon
+						local onlyNamesEnabled = GetCVarBool("nameplateShowOnlyNames") or GetCVarBool("nameplateShowOnlyNameForFriendlyPlayerUnits")
+						if onlyNamesEnabled then
+							TextureLoadingGroupMixin.AddTexture({ textures = self }, "showOnlyName")
+						end
 					end
-				end
-			end)
+				end)
+			end
 		end
 
 		--update the resource location and anchor
@@ -5720,7 +5728,7 @@ function Plater.OnInit() --private --~oninit ~init
 				end
 			else
 				icon:ClearAllPoints()
-				PixelUtil.SetPoint (icon, "left", castBar, "left", 0, 0)
+				icon:SetPoint("left", castBar, "left")
 				PixelUtil.SetSize (icon, castBarHeight, castBarHeight)
 				
 				--setup non interruptible cast shield
@@ -6188,11 +6196,11 @@ function Plater.OnInit() --private --~oninit ~init
 							scriptEnv._SpellName = self.SpellName
 							scriptEnv._Texture = self.SpellTexture
 							scriptEnv._Caster = self.unit
-							scriptEnv._Duration = not IS_WOW_PROJECT_MIDNIGHT and (self.SpellEndTime - self.SpellStartTime) or nil
+							scriptEnv._Duration = not IS_WOW_PROJECT_MIDNIGHT_API and (self.SpellEndTime - self.SpellStartTime) or nil
 							scriptEnv._StartTime = self.SpellStartTime
 							scriptEnv._CanInterrupt = self.CanInterrupt
 							scriptEnv._EndTime = self.SpellEndTime
-							scriptEnv._RemainingTime = not IS_WOW_PROJECT_MIDNIGHT and max (self.SpellEndTime - GetTime(), 0) or nil
+							scriptEnv._RemainingTime = not IS_WOW_PROJECT_MIDNIGHT_API and max (self.SpellEndTime - GetTime(), 0) or nil
 							scriptEnv._CanStealOrPurge = self.CanStealOrPurge
 							scriptEnv._AuraType = self.AuraType
 							
@@ -6214,14 +6222,14 @@ function Plater.OnInit() --private --~oninit ~init
 
 	function Plater.QuickHealthUpdate (unitFrame)
 		Plater.StartLogPerformanceCore("Plater-Core", "Health", "QuickHealthUpdate")
-		if IS_WOW_PROJECT_MIDNIGHT then
+		if IS_WOW_PROJECT_MIDNIGHT_API then
 			--unitFrame.healthBar.currentHealthMissing = UnitHealthMissing(unitFrame.unit, true)
 			--unitFrame.healthBar.currentHealthPercent = UnitHealthPercent(unitFrame.unit, true, CurveConstants.ScaleTo100)
 		else
 			local unitHealth = UnitHealth (unitFrame.unit)
 			local unitHealthMax = UnitHealthMax (unitFrame.unit)
-			unitFrame.healthBar:SetMinMaxValues (0, unitHealthMax, IS_WOW_PROJECT_MIDNIGHT and Enum.StatusBarInterpolation.ExponentialEaseOut or 0)
-			unitFrame.healthBar:SetValue (unitHealth, IS_WOW_PROJECT_MIDNIGHT and Enum.StatusBarInterpolation.ExponentialEaseOut or 0)
+			unitFrame.healthBar:SetMinMaxValues (0, unitHealthMax, IS_WOW_PROJECT_MIDNIGHT_API and Enum.StatusBarInterpolation.ExponentialEaseOut or 0)
+			unitFrame.healthBar:SetValue (unitHealth, IS_WOW_PROJECT_MIDNIGHT_API and Enum.StatusBarInterpolation.ExponentialEaseOut or 0)
 		
 			unitFrame.healthBar.currentHealth = unitHealth
 			unitFrame.healthBar.currentHealthMax = unitHealthMax
@@ -6269,7 +6277,7 @@ function Plater.OnInit() --private --~oninit ~init
 		if not IS_WOW_PROJECT_MIDNIGHT then
 			oldHealth = oldHealth or currentHealth
 		end
-		if IS_WOW_PROJECT_MIDNIGHT then
+		if IS_WOW_PROJECT_MIDNIGHT_API then
 			--these should be set already...
 			--self.currentHealthMissing = UnitHealthMissing(unitFrame.displayedUnit, true)
 			--self.currentHealthPercent = UnitHealthPercent(unitFrame.displayedUnit, true, CurveConstants.ScaleTo100)
@@ -6604,6 +6612,22 @@ end
 		end
 	end
 
+	function platerInternal.SplitEvaluateColor (state, r1, g1, b1, a1, r2, g2, b2, a2)
+		return C_CurveUtil.EvaluateColorValueFromBoolean(state, r1, r2),
+			C_CurveUtil.EvaluateColorValueFromBoolean(state, g1, g2),
+			C_CurveUtil.EvaluateColorValueFromBoolean(state, b1, b2),
+			C_CurveUtil.EvaluateColorValueFromBoolean(state, a1 or 1, a2 or 1)
+	end
+
+	function platerInternal.UnitHasMana (unitID)
+		if UnitPowerType then
+			return UnitPowerType(unitID) == Enum.PowerType.Mana
+		elseif UnitHasPowerType then
+			UnitHasPowerType(unitID, Enum.PowerType.Mana)
+		end
+		return false
+	end
+
 	--do several checkes to determine which are the color of this nameplate
 	--if force refresh is true, it'll ignore aggro and incombat checks in the ColorOverrider function
 	function Plater.FindAndSetNameplateColor (unitFrame, forceRefresh)
@@ -6658,14 +6682,14 @@ end
 					r, g, b, a = unpack (Plater.db.profile.unit_type_coloring_miniboss)
 					unitFrame.hasUnitTypeColor = true
 
-				--caster
-				elseif UnitClassBase(unitID) == "PALADIN" then
-					r, g, b, a = unpack (Plater.db.profile.unit_type_coloring_caster)
-					unitFrame.hasUnitTypeColor = true
-
 				--elite
 				elseif Plater.db.profile.unit_type_coloring_enable_elite and (unitFrame.namePlateClassification == "elite" or unitFrame.namePlateClassification == "rareelite") then
 					r, g, b, a = unpack (Plater.db.profile.unit_type_coloring_elite)
+					unitFrame.hasUnitTypeColor = true
+
+				--caster
+				elseif (not issecretvalue(UnitClassBase(unitID)) and UnitClassBase(unitID) == "PALADIN") or platerInternal.UnitHasMana(unitID) then
+					r, g, b, a = unpack (Plater.db.profile.unit_type_coloring_caster)
 					unitFrame.hasUnitTypeColor = true
 
 				--trivial
@@ -6930,6 +6954,8 @@ end
 			
 			local bf2Anchor = Plater.db.profile.aura_frame2_anchor
 			Plater.SetAnchor (buffFrame2, {side = bf2Anchor.side, x = bf2Anchor.x, y = bf2Anchor.y + plateConfigs.buff_frame_y_offset}, unitFrame.healthBar, (Plater.db.profile.aura2_grow_direction or 2) == 2)
+
+			Plater.SetAnchor (unitFrame.ExtraIconFrame, Plater.db.profile.extra_icon_anchor, unitFrame)
 			
 		if (Plater.db.profile.show_health_prediction or Plater.db.profile.show_shield_prediction) and healthBar.displayedUnit then
 			healthBar:UpdateHealPrediction() -- ensure health prediction is updated properly
@@ -9420,7 +9446,7 @@ end
 
 		--update options in the extra icons row frame
 		if (not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS and unitFrame.ExtraIconFrame.RefreshID < PLATER_REFRESH_ID) then
-			Plater.SetAnchor (unitFrame.ExtraIconFrame, Plater.db.profile.extra_icon_anchor)
+			--Plater.SetAnchor (unitFrame.ExtraIconFrame, Plater.db.profile.extra_icon_anchor)
 			unitFrame.ExtraIconFrame:SetOption ("anchor", Plater.db.profile.extra_icon_anchor)
 			unitFrame.ExtraIconFrame:SetOption ("show_text", Plater.db.profile.extra_icon_show_timer)
 			unitFrame.ExtraIconFrame:SetOption ("text_font", Plater.db.profile.extra_icon_timer_font)

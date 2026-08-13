@@ -1767,7 +1767,7 @@ local debuff_options = {
 		end,
 		name = "OPTIONS_ENABLED",
 		desc = "OPTIONS_ENABLED",
-		childrenids = {"auras_general_tooltip", "auras_general_alpha", "auras_general_iconspacing", "auras_general_icon_row_spacing", "auras_general_stack_similar_aura", "auras_general_stack_auratime"},
+		childrenids = {"auras_general_tooltip", "auras_general_tooltip_spellid", "auras_general_alpha", "auras_general_iconspacing", "auras_general_icon_row_spacing", "auras_general_stack_similar_aura", "auras_general_stack_auratime"},
 		children_follow_enabled = true,
 		--children_follow_reverse = true, --if the children should be enabled when the toogle is disabled, for cases like "do this automatically" if not, set manually
 	},
@@ -1783,6 +1783,23 @@ local debuff_options = {
 		name = "OPTIONS_SHOWTOOLTIP",
 		desc = "OPTIONS_SHOWTOOLTIP_DESC",
 		id = "auras_general_tooltip",
+	},
+
+	{
+		type = "toggle",
+		get = function() return GetCVarBool ("tooltipShowAuraSpellIDs") end,
+		set = function (self, fixedparam, value) 
+			if (value) then
+				SetCVar ("tooltipShowAuraSpellIDs", CVAR_ENABLED)
+			else
+				SetCVar ("tooltipShowAuraSpellIDs", CVAR_DISABLED)
+			end
+		end,
+		nocombat = true,
+		name = "Show SpellIDs in Tooltip" .. CVarIcon,
+		desc = "If enabled, the spellID of the aura is shown in the aura tooltip." .. CVarDesc,
+		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+		id = "auras_general_tooltip_spellid",
 	},
 	
 	{
@@ -2187,7 +2204,7 @@ local debuff_options = {
 		end,
 		name = "Show Buffs Blizzard Nameplates show",
 		desc = "Show Buffs as they would be shown on blizzard nameplates.\nIt is advised to disable all other buff auto-trackers for best experience.",
-		hidden = not IS_WOW_PROJECT_MIDNIGHT,
+		hidden = not IS_WOW_PROJECT_MIDNIGHT or IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
 	},
 	{
 		type = "toggle",
@@ -2989,6 +3006,7 @@ Plater.CreateAuraTesting()
 	 
 	local method_change_callback = function()
 		Plater.RefreshDBUpvalues()
+		if not InCombatLockdown then SetCVar("UnitNameFriendlyPlayerName", GetCVar("UnitNameFriendlyPlayerName")) end
 	end
 	
 	local debuff_panel_texts = {
@@ -3004,7 +3022,7 @@ Plater.CreateAuraTesting()
 	auraFilterFrame:SetSize (f:GetWidth(), f:GetHeight() + startY)
 
 	auraFilterFrame:SetScript("OnShow", function()
-		if not IsBetaBuild() then
+		if not IsBetaBuild() and not IsPublicTestClient() then
 			DF:LoadSpellCache(Plater.SpellHashTable, Plater.SpellIndexTable, Plater.SpellSameNameTable)
 		end
 	end)
@@ -3015,7 +3033,7 @@ Plater.CreateAuraTesting()
 	local auraConfigPanel = DF:CreateAuraConfigPanel (auraFilterFrame, "$parentAuraConfig", Plater.db.profile, method_change_callback, aura_options, debuff_panel_texts)
 	auraConfigPanel:SetPoint ("topleft", auraFilterFrame, "topleft", 10, startY)
 	auraConfigPanel:SetSize (f:GetWidth() - 20, f:GetHeight() + startY)
-	if IS_WOW_PROJECT_MIDNIGHT then
+	if IS_WOW_PROJECT_MIDNIGHT and not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then
 		auraConfigPanel:Hide()
 		local optionsTable = {
             {type = "label", get = function() return "Not available in Midnight and onwards due to API limitations." end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
@@ -3830,7 +3848,7 @@ Plater.CreateAuraTesting()
 		
 		specialAuraFrame:SetScript ("OnShow", function()
 			special_auras_added:Refresh()
-			if not IsBetaBuild() then
+			if not IsBetaBuild() and not IsPublicTestClient() then
 				DF:LoadSpellCache(Plater.SpellHashTable, Plater.SpellIndexTable, Plater.SpellSameNameTable)
 			end
 		end)
@@ -5658,7 +5676,7 @@ local relevance_options = {
 			get = function() return Plater.db.profile.hide_friendly_npc_healthbar end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.hide_friendly_npc_healthbar = value
-				SetCVar("UnitNameFriendlyPlayerName", GetCVar("UnitNameFriendlyPlayerName"))
+				if not InCombatLockdown() then SetCVar("UnitNameFriendlyPlayerName", GetCVar("UnitNameFriendlyPlayerName")) end
 			end,
 			name = "Hide Friendly NPCs Health Bar", --show friendly nameplates
 			desc = "Hide Friendly NPCs Health Bar\nWill require the healthbars to be hidden and shown again to take effect after changing.",
@@ -5868,7 +5886,7 @@ local relevance_options = {
 			max = (IS_WOW_PROJECT_MIDNIGHT_API and 60) or ((IS_WOW_PROJECT_CLASSIC_TBC or IS_WOW_PROJECT_CLASSIC_WRATH) and 41) or 20, --41y for tbc, 20y for classic era
 			step = 1,
 			name = "View Distance" .. CVarIcon,
-			desc = "How far you can see nameplates (in yards).\n\n|cFFFFFFFFCurrent limitations: Retail = 60y, TBC = 20-41y, Classic = 20y|r" .. CVarDesc,
+			desc = "How far you can see nameplates (in yards)." .. CVarDesc,
 			nocombat = true,
 		},
 		
@@ -5886,7 +5904,7 @@ local relevance_options = {
 			max = (IS_WOW_PROJECT_MIDNIGHT_API and 60) or ((IS_WOW_PROJECT_CLASSIC_TBC or IS_WOW_PROJECT_CLASSIC_WRATH) and 0) or 0, --not available for classic/wrath
 			step = 1,
 			name = "Player View Distance" .. CVarIcon,
-			desc = "How far you can see player nameplates (in yards).\n\n|cFFFFFFFFLimitations: Retail = 60y, TBC/Classic: not available|r" .. CVarDesc,
+			desc = "How far you can see player nameplates (in yards)." .. CVarDesc,
 			nocombat = true,
 		},
 
