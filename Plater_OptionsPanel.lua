@@ -2036,7 +2036,7 @@ local debuff_options = {
 		end,
 		name = "Show Debuffs Blizzard Nameplates show",
 		desc = "Show Debuffs as they would be shown on blizzard nameplates.\nIt is advised to disable all other debuff auto-trackers for best experience.",
-		hidden = not IS_WOW_PROJECT_MIDNIGHT or IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+		hidden = not IS_WOW_PROJECT_MIDNIGHT,
 	},
 
 	{
@@ -2576,6 +2576,7 @@ local debuff_options = {
 		end,
 		name = "Buffs Border Color",
 		desc = "Buffs Border Color",
+		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 		--border color is debuff
 	{
@@ -2592,6 +2593,7 @@ local debuff_options = {
 		end,
 		name = "Debuffs Border Color",
 		desc = "Debuffs Border Color",
+		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	--border color is offensive
 	{
@@ -2608,6 +2610,7 @@ local debuff_options = {
 		end,
 		name = "Crowd Control Border Color",
 		desc = "Crowd Control Border Color",
+		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	--border color is offensive
 	{
@@ -2743,12 +2746,13 @@ local debuff_options = {
 		get = function() return Plater.db.profile.aura_timer_pandemic_color end,
 		set = function (self, fixedparam, value) 
 			Plater.db.profile.aura_timer_pandemic_color = value
+			Plater.RefreshAuarasCurves()
 			Plater.RefreshAuras()
 			Plater.UpdateAllPlates()
 		end,
 		name = "Pandemic coloring",
 		desc = "Coloring the timer value based on duration left: >25%: default, <25%: orange, <15%: red.",
-		hidden = not IS_WOW_PROJECT_MIDNIGHT,
+		--hidden = not IS_WOW_PROJECT_MIDNIGHT,
 	},
 	
 	{
@@ -2757,12 +2761,13 @@ local debuff_options = {
 		get = function() return Plater.db.profile.aura_timer_decimals end,
 		set = function (self, fixedparam, value) 
 			Plater.db.profile.aura_timer_decimals = value
+			Plater.RefreshAuarasCurves()
 			Plater.RefreshAuras()
 			Plater.UpdateAllPlates()
 		end,
 		name = "Show Decimals",
 		desc = "Show decimals below 10s remaining time",
-		hidden = IS_WOW_PROJECT_MIDNIGHT,
+		--hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 
 	{
@@ -3022,9 +3027,9 @@ Plater.CreateAuraTesting()
 	auraFilterFrame:SetSize (f:GetWidth(), f:GetHeight() + startY)
 
 	auraFilterFrame:SetScript("OnShow", function()
-		if not IsBetaBuild() and not IsPublicTestClient() then
+		--if not IsBetaBuild() and not IsPublicTestClient() then
 			DF:LoadSpellCache(Plater.SpellHashTable, Plater.SpellIndexTable, Plater.SpellSameNameTable)
-		end
+		--end
 	end)
 	auraFilterFrame:SetScript("OnHide", function()
 		--DF:UnloadSpellCache()
@@ -3848,9 +3853,9 @@ Plater.CreateAuraTesting()
 		
 		specialAuraFrame:SetScript ("OnShow", function()
 			special_auras_added:Refresh()
-			if not IsBetaBuild() and not IsPublicTestClient() then
+			--if not IsBetaBuild() and not IsPublicTestClient() then
 				DF:LoadSpellCache(Plater.SpellHashTable, Plater.SpellIndexTable, Plater.SpellSameNameTable)
-			end
+			--end
 		end)
 		specialAuraFrame:SetScript ("OnHide", function()
 			--DF:UnloadSpellCache()
