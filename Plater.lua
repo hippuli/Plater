@@ -383,7 +383,6 @@ Plater.AnchorNamesByPhraseId = {
 --Plater allocate several values in memory to save performance (cpu), this may increase memory usage
 --example: intead of querying Plater.db.profile.tank it just hold a pointer to that table in the variable DB_AGGRO_TANK_COLORS, and this pointer is updated when the user changes something in the options panel
 
-	local DB_NUMBER_REGION_EAST_ASIA
 	local DB_TICK_THROTTLE
 	local DB_LERP_COLOR
 	local DB_LERP_COLOR_SPEED
@@ -1787,7 +1786,6 @@ Plater.AnchorNamesByPhraseId = {
 		DB_AURA_ALPHA = profile.aura_alpha
 		DB_AURA_SEPARATE_BUFFS = profile.buffs_on_aura2
 
-		DB_NUMBER_REGION_EAST_ASIA = Plater.db.profile.number_region == "eastasia"
 		platerInternal.ReBuildAbbreviateConfig()
 		
 		DB_TICK_THROTTLE = profile.update_throttle
@@ -2109,172 +2107,6 @@ Plater.AnchorNamesByPhraseId = {
 		unitFrame.PlaterRaidTargetFrame:SetFrameLevel(unitFrame.healthBar:GetFrameLevel() + 25)
 	end
 	
-	--> regional format numbers
-	do
-		local eastAsiaMyriads_1k, eastAsiaMyriads_10k, eastAsiaMyriads_1B
-		if (GetLocale() == "koKR") then
-			eastAsiaMyriads_1k, eastAsiaMyriads_10k, eastAsiaMyriads_1B = "천", "만", "억"
-			
-		elseif (GetLocale() == "zhCN") then
-			eastAsiaMyriads_1k, eastAsiaMyriads_10k, eastAsiaMyriads_1B = "千", "万", "亿"
-			
-		elseif (GetLocale() == "zhTW") then
-			eastAsiaMyriads_1k, eastAsiaMyriads_10k, eastAsiaMyriads_1B = "千", "萬", "億"
-			
-		else
-			eastAsiaMyriads_1k, eastAsiaMyriads_10k, eastAsiaMyriads_1B = "천", "만", "억"
-		end
-
-		platerInternal.abbreviateConfig = C_StringUtil and C_StringUtil.GetDefaultAbbreviationBreakpoints and C_StringUtil.GetDefaultAbbreviationBreakpoints(GetLocale()) -- default it
-		platerInternal.ReBuildAbbreviateConfig = function()
-			if not platerInternal.abbreviateConfig then return end -- if it could not be defaulted, skip this.
-			local myriadK, myriadM, myriadB, myriadT
-			if DB_NUMBER_REGION_EAST_ASIA then
-				-- use the easter locale
-				myriadM, myriadB = eastAsiaMyriads_10k, eastAsiaMyriads_1B
-				platerInternal.abbreviateConfig = {
-					breakpointData = {
-						{
-							breakpoint=1000000000,
-							significandDivisor=100000000,
-							fractionDivisor=1,
-							abbreviationIsGlobal=false,
-							abbreviation=myriadB
-						}, 
-						{
-							breakpoint=100000000, 
-							significandDivisor=10000000,
-							fractionDivisor=10,
-							abbreviationIsGlobal=false,
-							abbreviation=myriadB
-						}, 
-						{
-							breakpoint=100000,
-							significandDivisor=10000,
-							fractionDivisor=1,
-							abbreviationIsGlobal=false,
-							abbreviation=myriadM
-						}, 
-						{
-							breakpoint=10000,
-							significandDivisor=1000,
-							fractionDivisor=10,
-							abbreviationIsGlobal=false,
-							abbreviation=myriadM
-						}
-					}
-				}
-			else
-				-- default to eastern locale
-				myriadK, myriadM, myriadB, myriadT = "K", "M", "B", "T"
-				platerInternal.abbreviateConfig = {
-					breakpointData = {
-						{ 
-							breakpoint=10000000000000,
-							significandDivisor=1000000000000,
-							fractionDivisor=1,
-							abbreviationIsGlobal=false,
-							abbreviation=myriadT
-						},
-						{
-							breakpoint=1000000000000,
-							significandDivisor=100000000000,
-							fractionDivisor=10,
-							abbreviationIsGlobal=false,
-							abbreviation=myriadT
-						},
-						{
-							breakpoint=10000000000,
-							significandDivisor=1000000000,
-							fractionDivisor=1,
-							abbreviationIsGlobal=false,
-							abbreviation=myriadB
-						},
-						{
-							breakpoint=1000000000,
-							significandDivisor=100000000,
-							fractionDivisor=10,
-							abbreviationIsGlobal=false,
-							abbreviation=myriadB 
-						}, 
-						{
-							breakpoint=10000000,
-							significandDivisor=1000000,
-							fractionDivisor=1,
-							abbreviationIsGlobal=false,
-							abbreviation=myriadM
-						}, 
-						{
-							breakpoint=1000000,
-							significandDivisor=100000,
-							fractionDivisor=10,
-							abbreviationIsGlobal=false,
-							abbreviation=myriadM
-						}, 
-						{
-							breakpoint=10000,
-							significandDivisor=1000,
-							fractionDivisor=1,
-							abbreviationIsGlobal=false,
-							abbreviation=myriadK
-						}, 
-						{
-							breakpoint=1000,
-							significandDivisor=100,
-							fractionDivisor=10,
-							abbreviationIsGlobal=false,
-							abbreviation=myriadK
-						}
-					}
-				}
-			end
-		end
-		Plater.GetAbbreviateConfig = function ()
-			return platerInternal.abbreviateConfig
-		end
-
-		function Plater.FormatNumber (number)
-			if (DB_NUMBER_REGION_EAST_ASIA) then
-				if (number > 99999999) then
-					return format ("%.2f", number/100000000) .. eastAsiaMyriads_1B
-					
-				elseif (number > 999999) then
-					return format ("%.2f", number/10000) .. eastAsiaMyriads_10k
-					
-				elseif (number > 99999) then
-					return floor (number/10000) .. eastAsiaMyriads_10k
-					
-				elseif (number > 9999) then
-					return format ("%.1f", (number/10000)) .. eastAsiaMyriads_10k
-					
-				elseif (number > 999) then
-					return format ("%.1f", (number/1000)) .. eastAsiaMyriads_1k
-					
-				end
-				
-				return format ("%.1f", number)
-			else
-				if (number > 999999999) then
-					return format ("%.2fB", number/1000000000)
-					
-				elseif (number > 999999) then
-					return format ("%.2fM", number/1000000)
-					
-				elseif (number > 99999) then
-					return floor (number/1000) .. "K"
-					
-				elseif (number > 999) then
-					return format ("%.1fK", (number/1000))
-					
-				end
-				
-				return floor (number)			
-			end
-		end
-
-	end
-	
-
 	
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> event handler
@@ -2369,10 +2201,20 @@ Plater.AnchorNamesByPhraseId = {
 					--Plater.ScheduleUpdateForNameplate (plateFrame, unit)
 					
 					Plater.RunScheduledUpdate({unitId = unit}) -- do this now
-					if plateFrame.unitFrame.PlaterOnScreen then
-						Plater.CreateOrUpdateAuraContainers(plateFrame.unitFrame, unit)
+					if plateFrame.unitFrame.PlaterOnScreen then -- should no longer be needed
+						--Plater.CreateOrUpdateAuraContainers(plateFrame.unitFrame, unit, true)
 					end
 				end
+			elseif NAMEPLATES_ON_SCREEN_CACHE[unit] then
+				-- no nameplate anymore, hide it
+				Plater.RunFunctionForEvent ("NAME_PLATE_UNIT_REMOVED", unit)
+			end
+		end,
+
+		UNIT_CLASSIFICATION_CHANGED = function (_, unit)
+			if NAMEPLATES_ON_SCREEN_CACHE[unit] then -- this is on screen, refresh it.
+				Plater.RunFunctionForEvent ("NAME_PLATE_UNIT_REMOVED", unit)
+				Plater.RunFunctionForEvent ("NAME_PLATE_UNIT_ADDED", unit)
 			end
 		end,
 		
@@ -2388,7 +2230,7 @@ Plater.AnchorNamesByPhraseId = {
 			if (plateFrame) then
 				Plater.ScheduleUpdateForNameplate (plateFrame)
 				if plateFrame.unitFrame.PlaterOnScreen then
-					Plater.CreateOrUpdateAuraContainers(plateFrame.unitFrame, unit)
+					--Plater.CreateOrUpdateAuraContainers(plateFrame.unitFrame, unit) -- should no longer be needed
 				end
 			end
 		end,
@@ -3922,7 +3764,6 @@ Plater.AnchorNamesByPhraseId = {
 			
 			plateFrame.unitFrame.PlaterOnScreen = true
 			
-			Plater.AddToAuraUpdate(unitID, plateFrame.unitFrame)
 			-- update DBM and BigWigs nameplate auras
 			Plater.EnsureUpdateBossModAuras(plateFrame [MEMBER_GUID])
 			
@@ -3980,6 +3821,8 @@ Plater.AnchorNamesByPhraseId = {
 			plateFrame.actorType = actorType
 			unitFrame.actorType = actorType
 			unitFrame.ActorType = actorType --exposed to scripts
+
+			Plater.AddToAuraUpdate(unitID, plateFrame.unitFrame)
 			
 			--set the unit
 			unitFrame:SetUnit (unitID)
@@ -4372,7 +4215,7 @@ Plater.AnchorNamesByPhraseId = {
 		NAME_PLATE_UNIT_REMOVED = function (event, unitBarId)
 			--ViragDevTool_AddData({ctime = GetTime(), unit = unitBarId or "nil", stack = debugstack()}, "NAME_PLATE_UNIT_REMOVED - " .. (unitBarId or "nil"))
 			---@type plateframe
-			local plateFrame = C_NamePlate.GetNamePlateForUnit (unitBarId)
+			local plateFrame = C_NamePlate.GetNamePlateForUnit (unitBarId) or (NAMEPLATES_ON_SCREEN_CACHE[unitBarId] and NAMEPLATES_ON_SCREEN_CACHE[unitBarId].PlateFrame) -- we had one that requires unloading.
 			
 			Plater.RemoveFromAuraUpdate (unitBarId, plateFrame.unitFrame) -- ensure no updates
 			
@@ -5029,6 +4872,7 @@ function Plater.OnInit() --private --~oninit ~init
 		
 		Plater.EventHandlerFrame:RegisterEvent ("UNIT_FLAGS")
 		Plater.EventHandlerFrame:RegisterEvent ("UNIT_FACTION")
+		Plater.EventHandlerFrame:RegisterEvent ("UNIT_CLASSIFICATION_CHANGED")
 		
 		Plater.EventHandlerFrame:RegisterEvent ("DISPLAY_SIZE_CHANGED")
 		Plater.EventHandlerFrame:RegisterEvent ("UI_SCALE_CHANGED")
@@ -6682,7 +6526,7 @@ end
 				r, g, b, a = unpack (Plater.db.profile.tap_denied_color)
 				
 			--elseif Plater.db.profile.unit_type_coloring_enabled and (Plater.ZoneInstanceType == "party" or Plater.ZoneInstanceType == "raid") and unitFrame.isGoodAggroState then
-			elseif Plater.db.profile.unit_type_coloring_enabled and (Plater.ZoneInstanceType == "party" or Plater.ZoneInstanceType == "raid") then
+			elseif Plater.db.profile.unit_type_coloring_enabled and (Plater.ZoneInstanceType == "party" or Plater.ZoneInstanceType == "raid" or Plater.ZoneInstanceType == "scenario") then
 				local pLevel = UnitEffectiveLevel("player")
                 local uLevel = UnitEffectiveLevel(unitID)
 

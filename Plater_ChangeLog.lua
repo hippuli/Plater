@@ -8,6 +8,16 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1787663808, "Bug Fix", "Aug 25th, 2026", "Fixed the number format style not applying correctly.", "cont1nuity"},
+			{1787663808, "Bug Fix", "Aug 25th, 2026", "Fixed an issue with buff filtering.", "cont1nuity"},
+			{1787663808, "Backend Change", "Aug 24th, 2026", "Relevant aura name caches are now persistent and will ignore unknown entries, saving performance while loading after initial buildup.", "cont1nuity"},
+
+			{1787261710, "Backend Change", "Aug 21st, 2026", "Implementing custom aura dispel type colors.", "cont1nuity"},
+			{1787261710, "Backend Change", "Aug 20th, 2026", "Performance improvements through aura container config caching.", "cont1nuity"},
+			{1787261710, "Backend Change", "Aug 20th, 2026", "Fixed and improved spell cache build and usage to reduce overall memory footprint.", "cont1nuity"},
+			{1787261710, "Backend Change", "Aug 19th, 2026", "Added a buff 'blizzard-like' auto-filter.", "cont1nuity"},
+			{1787261710, "Bug Fix", "Aug 19th, 2026", "Several fixes for aura filters tracking/blocking.", "cont1nuity"},
+			
 			{1787083209, "Bug Fix", "Aug 18th, 2026", "Fix issues with manual aura tracking.", "cont1nuity"},
 			{1787083209, "Backend Change", "Aug 18th, 2026", "All aura tracking lists (whitelist, blacklist, manual tracking, buff special) now support tracking by spell name as well again.", "cont1nuity"},
 			{1787083209, "Bug Fix", "Aug 18th, 2026", "Fix issues with Designer.", "Terciob"},

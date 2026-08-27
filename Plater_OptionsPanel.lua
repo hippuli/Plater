@@ -2204,7 +2204,7 @@ local debuff_options = {
 		end,
 		name = "Show Buffs Blizzard Nameplates show",
 		desc = "Show Buffs as they would be shown on blizzard nameplates.\nIt is advised to disable all other buff auto-trackers for best experience.",
-		hidden = not IS_WOW_PROJECT_MIDNIGHT or IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+		hidden = not IS_WOW_PROJECT_MIDNIGHT,
 	},
 	{
 		type = "toggle",
@@ -2288,6 +2288,33 @@ local debuff_options = {
 		end,
 		name = "Hide permanent auras",
 		desc = "Hide auras with no duration.",
+		hidden = IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+	},
+	{
+		type = "toggle",
+		boxfirst = true,
+		get = function() return Plater.db.profile.aura_hide_permanent_buffs end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_hide_permanent_buffs = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Hide permanent buffs",
+		desc = "Hide auras with no duration.",
+		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+	},
+	{
+		type = "toggle",
+		boxfirst = true,
+		get = function() return Plater.db.profile.aura_hide_permanent_debuffs end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_hide_permanent_debuffs = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Hide permanent debuffs",
+		desc = "Hide auras with no duration.",
+		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
 	},
 
 	{type = "breakline"},
@@ -2646,6 +2673,135 @@ local debuff_options = {
 		desc = "Defensive CD Border Color",
 		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
+
+	--midnight
+	{type = "label", get = function() return "Dispel Type Colors:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS},
+	{
+		type = "toggle",
+		boxfirst = true,
+		get = function() return Plater.db.profile.aura_border_colors_by_type end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_border_colors_by_type = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+			Plater.RefreshAuras()
+		end,
+		name = "Use type based aura border colors",
+		desc = "Use the Blizzard debuff type colors for borders",
+	},
+	{
+		type = "color",
+		boxfirst = true,
+		get = function()
+			local color = Plater.db.profile.aura_border_colors.none
+			return {color[1], color[2], color[3], color[4]}
+		end,
+		set = function (self, r, g, b, a) 
+			local color = Plater.db.profile.aura_border_colors.none
+			color[1], color[2], color[3], color[4] = r, g, b, a
+			Plater.UpdateAllPlates()
+		end,
+		name = "None",
+		desc = "Color for 'No dispel type'",
+		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+	},
+	{
+		type = "color",
+		boxfirst = true,
+		get = function()
+			local color = Plater.db.profile.aura_border_colors.magic
+			return {color[1], color[2], color[3], color[4]}
+		end,
+		set = function (self, r, g, b, a) 
+			local color = Plater.db.profile.aura_border_colors.magic
+			color[1], color[2], color[3], color[4] = r, g, b, a
+			Plater.UpdateAllPlates()
+		end,
+		name = "Magic",
+		desc = "Color for 'Magic' dispel type'",
+		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+	},
+	{
+		type = "color",
+		boxfirst = true,
+		get = function()
+			local color = Plater.db.profile.aura_border_colors.curse
+			return {color[1], color[2], color[3], color[4]}
+		end,
+		set = function (self, r, g, b, a) 
+			local color = Plater.db.profile.aura_border_colors.curse
+			color[1], color[2], color[3], color[4] = r, g, b, a
+			Plater.UpdateAllPlates()
+		end,
+		name = "Curse",
+		desc = "Color for 'Curse' dispel type'",
+		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+	},
+	{
+		type = "color",
+		boxfirst = true,
+		get = function()
+			local color = Plater.db.profile.aura_border_colors.disease
+			return {color[1], color[2], color[3], color[4]}
+		end,
+		set = function (self, r, g, b, a) 
+			local color = Plater.db.profile.aura_border_colors.disease
+			color[1], color[2], color[3], color[4] = r, g, b, a
+			Plater.UpdateAllPlates()
+		end,
+		name = "Disease",
+		desc = "Color for 'Disease' dispel type'",
+		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+	},
+	{
+		type = "color",
+		boxfirst = true,
+		get = function()
+			local color = Plater.db.profile.aura_border_colors.poison
+			return {color[1], color[2], color[3], color[4]}
+		end,
+		set = function (self, r, g, b, a) 
+			local color = Plater.db.profile.aura_border_colors.poison
+			color[1], color[2], color[3], color[4] = r, g, b, a
+			Plater.UpdateAllPlates()
+		end,
+		name = "Poison",
+		desc = "Color for 'Poison' dispel type'",
+		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+	},
+	{
+		type = "color",
+		boxfirst = true,
+		get = function()
+			local color = Plater.db.profile.aura_border_colors.bleed
+			return {color[1], color[2], color[3], color[4]}
+		end,
+		set = function (self, r, g, b, a) 
+			local color = Plater.db.profile.aura_border_colors.bleed
+			color[1], color[2], color[3], color[4] = r, g, b, a
+			Plater.UpdateAllPlates()
+		end,
+		name = "Bleed",
+		desc = "Color for 'Bleed' dispel type'",
+		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+	},
+	{
+		type = "color",
+		boxfirst = true,
+		get = function()
+			local color = Plater.db.profile.aura_border_colors.enrage
+			return {color[1], color[2], color[3], color[4]}
+		end,
+		set = function (self, r, g, b, a) 
+			local color = Plater.db.profile.aura_border_colors.enrage
+			color[1], color[2], color[3], color[4] = r, g, b, a
+			Plater.UpdateAllPlates()
+		end,
+		name = "Enrage",
+		desc = "Color for 'Enrage' dispel type'",
+		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+	},
+	{type = "break"},
 	--border color is default
 	{
 		type = "color",
@@ -2660,22 +2816,8 @@ local debuff_options = {
 			Plater.UpdateAllPlates()
 		end,
 		name = "Default Border Color",
-		desc = "Default Border Color",
+		desc = "Default Border Color, if type-based is disabled.",
 	},
-	
-	{
-		type = "toggle",
-		boxfirst = true,
-		get = function() return Plater.db.profile.aura_border_colors_by_type end,
-		set = function (self, fixedparam, value) 
-			Plater.db.profile.aura_border_colors_by_type = value
-			Plater.RefreshDBUpvalues()
-			Plater.UpdateAllPlates()
-			Plater.RefreshAuras()
-		end,
-		name = "Use type based aura border colors",
-		desc = "Use the Blizzard debuff type colors for borders",
-	},	
 	
 	{type = "breakline"},
 	
@@ -3198,7 +3340,7 @@ Plater.CreateAuraTesting()
 		
 		local on_toggle_mine = function (self, spellID, state)
 			Plater.db.profile.extra_icon_auras_mine [spellID] = state
-			Plater.RefreshDBLists()
+			Plater.RefreshDBUpvalues()
 		end
 		
 		local scroll_createline = function (self, index)
@@ -3371,6 +3513,7 @@ Plater.CreateAuraTesting()
 				
 				special_auras_added:Refresh()
 				Plater.RefreshDBUpvalues()
+				--Plater.UpdateAuraCache()
 			end
 			
 		end, 100, 20, "Add Aura", nil, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"))		
@@ -3750,7 +3893,155 @@ Plater.CreateAuraTesting()
 			
 			{type = "breakline"},
 			
-			{type = "label", get = function() return "Aura Border Colors:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			-- midnight ones.
+			{type = "label", get = function() return "Dispel Type Colors:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS},
+			{
+				type = "toggle",
+				boxfirst = true,
+				get = function() return Plater.db.profile.extra_icon_aura_border_colors_by_type end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.extra_icon_aura_border_colors_by_type = value
+					Plater.RefreshDBUpvalues()
+					Plater.UpdateAllPlates()
+					Plater.RefreshAuras()
+				end,
+				name = "Use type based aura border colors",
+				desc = "Use the Blizzard debuff type colors for borders",
+				hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+			},
+			{
+				type = "color",
+				boxfirst = true,
+				get = function()
+					local color = Plater.db.profile.extra_icon_dispel_type_colors.none
+					return {color[1], color[2], color[3], color[4]}
+				end,
+				set = function (self, r, g, b, a) 
+					local color = Plater.db.profile.extra_icon_dispel_type_colors.none
+					color[1], color[2], color[3], color[4] = r, g, b, a
+					Plater.UpdateAllPlates()
+				end,
+				name = "None",
+				desc = "Color for 'No dispel type'",
+				hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+			},
+			{
+				type = "color",
+				boxfirst = true,
+				get = function()
+					local color = Plater.db.profile.extra_icon_dispel_type_colors.magic
+					return {color[1], color[2], color[3], color[4]}
+				end,
+				set = function (self, r, g, b, a) 
+					local color = Plater.db.profile.extra_icon_dispel_type_colors.magic
+					color[1], color[2], color[3], color[4] = r, g, b, a
+					Plater.UpdateAllPlates()
+				end,
+				name = "Magic",
+				desc = "Color for 'Magic' dispel type'",
+				hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+			},
+			{
+				type = "color",
+				boxfirst = true,
+				get = function()
+					local color = Plater.db.profile.extra_icon_dispel_type_colors.curse
+					return {color[1], color[2], color[3], color[4]}
+				end,
+				set = function (self, r, g, b, a) 
+					local color = Plater.db.profile.extra_icon_dispel_type_colors.curse
+					color[1], color[2], color[3], color[4] = r, g, b, a
+					Plater.UpdateAllPlates()
+				end,
+				name = "Curse",
+				desc = "Color for 'Curse' dispel type'",
+				hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+			},
+			{
+				type = "color",
+				boxfirst = true,
+				get = function()
+					local color = Plater.db.profile.extra_icon_dispel_type_colors.disease
+					return {color[1], color[2], color[3], color[4]}
+				end,
+				set = function (self, r, g, b, a) 
+					local color = Plater.db.profile.extra_icon_dispel_type_colors.disease
+					color[1], color[2], color[3], color[4] = r, g, b, a
+					Plater.UpdateAllPlates()
+				end,
+				name = "Disease",
+				desc = "Color for 'Disease' dispel type'",
+				hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+			},
+			{
+				type = "color",
+				boxfirst = true,
+				get = function()
+					local color = Plater.db.profile.extra_icon_dispel_type_colors.poison
+					return {color[1], color[2], color[3], color[4]}
+				end,
+				set = function (self, r, g, b, a) 
+					local color = Plater.db.profile.extra_icon_dispel_type_colors.poison
+					color[1], color[2], color[3], color[4] = r, g, b, a
+					Plater.UpdateAllPlates()
+				end,
+				name = "Poison",
+				desc = "Color for 'Poison' dispel type'",
+				hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+			},
+			{
+				type = "color",
+				boxfirst = true,
+				get = function()
+					local color = Plater.db.profile.extra_icon_dispel_type_colors.bleed
+					return {color[1], color[2], color[3], color[4]}
+				end,
+				set = function (self, r, g, b, a) 
+					local color = Plater.db.profile.extra_icon_dispel_type_colors.bleed
+					color[1], color[2], color[3], color[4] = r, g, b, a
+					Plater.UpdateAllPlates()
+				end,
+				name = "Bleed",
+				desc = "Color for 'Bleed' dispel type'",
+				hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+			},
+			{
+				type = "color",
+				boxfirst = true,
+				get = function()
+					local color = Plater.db.profile.extra_icon_dispel_type_colors.enrage
+					return {color[1], color[2], color[3], color[4]}
+				end,
+				set = function (self, r, g, b, a) 
+					local color = Plater.db.profile.extra_icon_dispel_type_colors.enrage
+					color[1], color[2], color[3], color[4] = r, g, b, a
+					Plater.UpdateAllPlates()
+				end,
+				name = "Enrage",
+				desc = "Color for 'Enrage' dispel type'",
+				hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+			},
+			{type = "break"},
+			--border color is default
+			{
+				type = "color",
+				boxfirst = true,
+				get = function()
+					local color = Plater.db.profile.extra_icon_dispel_type_colors.default
+					return {color[1], color[2], color[3], color[4]}
+				end,
+				set = function (self, r, g, b, a) 
+					local color = Plater.db.profile.extra_icon_dispel_type_colors.default
+					color[1], color[2], color[3], color[4] = r, g, b, a
+					Plater.UpdateAllPlates()
+				end,
+				name = "Default Border Color",
+				desc = "Default Border Color, if type-based is disabled.",
+				hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+			},
+
+			-- classic ones
+			{type = "label", get = function() return "Aura Border Colors:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS},
 			--cc border color
 			{
 				type = "color",
@@ -3765,6 +4056,7 @@ Plater.CreateAuraTesting()
 				end,
 				name = "Crowd Control Border Color",
 				desc = "Crowd Control Border Color",
+				hidden = IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
 			},
 			--purge border color
 			{
@@ -3780,6 +4072,7 @@ Plater.CreateAuraTesting()
 				end,
 				name = "Dispellable Border Color",
 				desc = "Dispellable Border Color",
+				hidden = IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
 			},
 			--enrage border color
 			{
@@ -3795,6 +4088,7 @@ Plater.CreateAuraTesting()
 				end,
 				name = "Enrage Border Color",
 				desc = "Enrage Border Color",
+				hidden = IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
 			},
 			--offensive border color
 			{
@@ -3810,6 +4104,7 @@ Plater.CreateAuraTesting()
 				end,
 				name = "Offensive Border Color",
 				desc = "Offensive Border Color",
+				hidden = IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
 			},
 			--defensive border color
 			{
@@ -3825,6 +4120,7 @@ Plater.CreateAuraTesting()
 				end,
 				name = "Defensive Border Color",
 				desc = "Defensive Border Color",
+				hidden = IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
 			},
 		}
 		
